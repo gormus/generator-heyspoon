@@ -1,0 +1,30 @@
+/**
+ * <%= app_name %> - v<%= app_version %>
+ */
+
+@charset "utf-8";
+<% if (includeBootstrap) { %>
+// Import Twitter Bootstrap styles.
+// Override variable settings in /app/styles/vendor/_bootstrap_settings.scss
+// Check out the official documentation at http://foundation.zurb.com/docs/
+@import "vendor/bootstrap_settings";
+@import "vendor/bootstrap";
+// Support Internet Explorer 10 in Windows 8 and Windows Phone 8.
+// http://getbootstrap.com/getting-started/#support-ie10-width
+@-webkit-viewport   { width: device-width; }
+@-moz-viewport      { width: device-width; }
+@-ms-viewport       { width: device-width; }
+@-o-viewport        { width: device-width; }
+@viewport           { width: device-width; }
+<% } %>
+<% if (includeFoundation) { %>
+// Import Zurb Foundation styles.
+// Override variable settings in /app/styles/vendor/_foundation_settings.scss
+// Check out the official documentation at http://foundation.zurb.com/docs/
+@import "vendor/normalize";
+@import "vendor/foundation_settings";
+@import "vendor/foundation";
+<% } %>
+
+
+@import "home";

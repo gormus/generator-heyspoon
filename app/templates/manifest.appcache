@@ -1,0 +1,13 @@
+CACHE MANIFEST
+# This manifest is a placeholder. Do not edit.
+
+CACHE:
+
+NETWORK:
+*
+
+FALLBACK:
+/ /offline.html
+
+SETTINGS:
+prefer-online
