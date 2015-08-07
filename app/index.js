@@ -2,17 +2,17 @@
 
 // var chalk = require('chalk');
 var fs = require('fs');
-var generators = require('yeoman-generator');
+var generator = require('yeoman-generator');
 var path = require('path');
 var util = require('util');
 var wiredep = require('wiredep');
 var yosay = require('yosay');
 var _s = require('underscore.string');
 
-module.exports = generators.Base.extend({
+module.exports = generator.Base.extend({
   // Step 1.
   constructor: function () {
-    generators.Base.apply(this, arguments);
+    generator.Base.apply(this, arguments);
 
     this.argument('appname', { type: String, required: false });
     this.appName = this.appName || path.basename(process.cwd());
@@ -47,6 +47,15 @@ module.exports = generators.Base.extend({
       },
       {
         type: 'confirm',
+        name: 'glyphicons',
+        message: 'Enable Glyphicons?',
+        default: true,
+        when: function (answers) {
+          return answers.frontEnd === 'bootstrap';
+        }
+      },
+      {
+        type: 'confirm',
         name: 'Modernizr',
         message: 'Would you like to include Modernizr?',
         default: true
@@ -54,8 +63,10 @@ module.exports = generators.Base.extend({
     ];
 
     this.prompt(prompts, function (answers) {
+      // this.log(answers);
       this.frontEnd              = answers.frontEnd;
       this.includeBootstrap      = (this.frontEnd === 'bootstrap') ? true : false;
+      this.includeGlyphicons     = answers.glyphicons;
       this.includeFoundation     = (this.frontEnd === 'foundation') ? true : false;
       this.includeJQuery         = true;
       this.includeModernizr      = answers.Modernizr;
@@ -63,6 +74,7 @@ module.exports = generators.Base.extend({
       this.config.defaults({
         frontEnd              : this.frontEnd,
         includeBootstrap      : this.includeBootstrap,
+        includeGlyphicons     : this.includeGlyphicons,
         includeFoundation     : this.includeFoundation,
         includeJQuery         : this.includeJQuery,
         includeModernizr      : this.includeModernizr,
@@ -337,6 +349,7 @@ module.exports = generators.Base.extend({
         {
           process: function (contents) {
             var c = contents.toString().replace('@import "bootstrap/variables";\n', '');
+
             return c;
           }
         }
@@ -347,12 +360,32 @@ module.exports = generators.Base.extend({
         this.destinationPath('app/styles/vendor/_bootstrap_settings.scss')
       );
 
-      this.fs.copy(
-        this.destinationPath('app/bower_components/bootstrap-sass/assets/fonts/bootstrap/*.*'),
-        this.destinationPath('app/fonts/bootstrap/')
-      );
+      if (this.includeGlyphicons) {
+        this.fs.copy(
+          this.destinationPath('app/bower_components/bootstrap-sass/assets/fonts/bootstrap/*.*'),
+          this.destinationPath('app/fonts/bootstrap/')
+        );
+      }
+      else {
+        this.fs.copy(
+          this.destinationPath('app/styles/vendor/_bootstrap.scss'),
+          this.destinationPath('app/styles/vendor/_bootstrap.scss'),
+          {
+            process: function (contents) {
+              var c = contents.toString().replace('@import "bootstrap/glyphicons";\n', '');
+              return c;
+            }
+          }
+        );
+      }
     }
-    else if (this.includeFoundation) {
+
+
+
+
+
+
+    if (this.includeFoundation) {
       this.copy(
         this.destinationPath('app/bower_components/foundation/scss/foundation.scss'),
         this.destinationPath('app/styles/vendor/_foundation.scss')
