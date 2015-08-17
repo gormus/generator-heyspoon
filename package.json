@@ -1,6 +1,6 @@
 {
   "name": "generator-heyspoon",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Yeoman generator for Heyspoon front-end website.",
   "main": "index.js",
   "files": [
