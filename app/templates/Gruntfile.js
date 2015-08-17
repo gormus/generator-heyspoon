@@ -1,5 +1,4 @@
-// Generated on <%= (new Date).toISOString().split('T')[0] %> using
-// <%= app_name %> - v<%= app_version %>
+// Generated on <%= (new Date).toISOString().split('T')[0] %> using <%= app_name %> - v<%= app_version %>
 
 // # Globbing
 // for performance reasons we're only matching one level down:
@@ -93,7 +92,10 @@ module.exports = function (grunt) {
         tasks: ['sass', 'postcss']
       },
       html: {
-        files: ['<%%= dir.app.root %>/**/*.html']
+        files: [
+          '<%%= dir.app.root %>/**/*.html',
+          '!<%%= dir.vendor %>/*'
+        ]
       },
       handlebars: {
         files: ['<%%= dir.app.tpl %>/**/*.hbs'],
@@ -145,7 +147,7 @@ module.exports = function (grunt) {
       options: {
         sourceMap: false,
         sourceComments: true,
-        outputStyle: 'expanded', // nested, expanded, compact, compressed
+        outputStyle: 'expanded', // DO NOT USE 'compressed'. CSS WILL BE MINIFIED LATER.
         precision: 8,
         includePaths: [
           '.'<% if (includeBootstrap) { %>,
@@ -178,6 +180,24 @@ module.exports = function (grunt) {
       },
       dist: {
         src: '<%%= dir.app.css %>/{,*/}*.css'
+      }
+    },
+
+    cssmin: {
+      // https://github.com/jakubpawlowicz/clean-css#how-to-use-clean-css-programmatically
+      options: {
+        shorthandCompacting: false,
+        keepSpecialComments: 0,
+        roundingPrecision: -1
+      },
+      dist: {
+        files: [{
+          expand: true,
+          cwd: '<%%= dir.dist.css %>/',
+          src: ['*.css'],
+          dest: '<%%= dir.dist.css %>/',
+          ext: '.css'
+        }]
       }
     },
 
@@ -304,7 +324,7 @@ module.exports = function (grunt) {
         {
           expand: true,
           cwd: '<%%= dir.app.icons %>/',
-          src: '{,*/}*.{gif,jpeg,jpg,png,xml,json}',
+          src: '{,*/}*.{ico,gif,jpeg,jpg,png,xml,json}',
           dest: '<%%= dir.dist.icons %>/'
         }]
       }
@@ -331,7 +351,10 @@ module.exports = function (grunt) {
     filerev: {
       options: {
         algorithm: 'md5',
-        length: 6
+        length: 6,
+        process: function (basename, name, extension) {
+          return basename + '_' + name + '.' + extension;
+        }
       },
       source: {
         files: [{
@@ -469,12 +492,39 @@ module.exports = function (grunt) {
       }
     },
 
+    compress: {
+      dist: {
+        options: {
+          mode: 'gzip',
+          pretty: true,
+          extDot: 'last'
+        },
+        files: [
+          {
+            expand: true,
+            cwd: '<%%= dir.dist.js %>/',
+            src: ['**/*.js'],
+            dest: '<%%= dir.dist.js %>/',
+            ext: '.js.gz'
+          },
+          {
+            expand: true,
+            cwd: '<%%= dir.dist.css %>/',
+            src: ['**/*.css'],
+            dest: '<%%= dir.dist.css %>/',
+            ext: '.css.gz'
+          }
+        ]
+      }
+    },
+
     manifest: {
       generate: {
         options: {
           basePath: '<%%= dir.dist.root %>',
           network: [
-            '//www.google-analytics.com'
+            '//www.google-analytics.com',
+            'http://jsonplaceholder.typicode.com' // Remove this line for production.
           ],
           cache: [
             'crossdomain.xml'
@@ -486,10 +536,10 @@ module.exports = function (grunt) {
         },
         src: [
           '**/*.html',
-          'js/**/*.js',
-          'css/**/*.css',
+          'js/**/*.{js,js.gz}',
+          'css/**/*.{css,css.gz}',
           'images/{,*/}*.{gif,jpeg,jpg,png,svg}',
-          'icons/{,*/}*.{gif,jpeg,jpg,png,xml,json}',
+          'icons/{,*/}*.{ico,gif,jpeg,jpg,png,xml,json}',
           'fonts/{,*/}*.{eot,svg,ttf,woff,woff2}'
         ],
         dest: '<%%= dir.dist.root %>/manifest.appcache'
@@ -549,11 +599,13 @@ module.exports = function (grunt) {
         'uglify:generated',
         'requirejs',
         'removelogging',
+        'cssmin',
         'filerev',
         'usemin',
         'htmlmin',
         'uglify:dist',
-        'manifest'
+        'compress:dist',
+        'manifest' // Keep this as the last task.
       ]);
     }
   });

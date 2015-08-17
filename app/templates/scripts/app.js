@@ -7,18 +7,32 @@ define(
     'jquery',
     'underscore',
     'backbone',
-    'router', // Request router.js
+    'backbone.marionette',
+    'communicator',
+    'controllers/app',
+    'routers/app',
+    'views/layout/app'
   ],
-  function ($, _, Backbone, Router) {
+  function ($, _, Backbone, Marionette, Communicator, AppController, AppRouter, AppLayoutView) {
     'use strict';
 
-    var initialize = function () {
-      // Pass in our Router module and call it's initialize function
-      Router.initialize();
-    };
+    var App = new Marionette.Application();
 
-    return {
-      initialize: initialize
-    };
+    App.on('start', function() {
+      var controller = new AppController();
+      var router = new AppRouter({
+        controller: controller
+      });
+
+      console.log('Router', router);
+      this.view = new AppLayoutView();
+      Backbone.history.start();
+    });
+
+    Communicator.mediator.on('NAVIGATE:INDEX:ROUTE', function(view) {
+      App.view.ui.content.append(view.render().$el);
+    });
+
+    return App;
   }
 );

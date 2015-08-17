@@ -7,6 +7,8 @@
 require.config({
   baseUrl: 'scripts',
 
+  deps: ['backbone.marionette'],
+
   paths: {
     'jquery': '../bower_components/jquery/dist/jquery'
     , 'underscore': '../bower_components/underscore-amd/underscore'
